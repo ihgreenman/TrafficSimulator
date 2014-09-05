@@ -1,0 +1,16 @@
+Various items left to do:
+
+* Speed optimization
+* Further unit testing
+* Further acceptance testing
+* Further code cleanup
+* Automated unit checking (e.g. cannot add a position to a velocity, for example)
+
+Done:
+
+* Linked list representation for cars in lane
+* Some speed optimization
+* Some code cleanup
+* Accidents
+* Breakdowns
+* Better lane change logic

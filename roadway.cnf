@@ -1,0 +1,111 @@
+# lane is a description of a lane of traffic.
+# lane has two forms:
+#   lane <name> <length> <passengers> <speed> <generate> <meter> feeds <name2> <distance>
+#   lane <name> <length> <passengers> <speed> <generate> <meter> absorbs <absorb>
+#
+# The first form describes a road that feeds into another lane when it terminates.
+# The second form describes a road that goes off the edge of the model.
+#
+# where:
+#   <name> (string, no spaces) is the unique name of the road
+#   <length> (integer) is the length of the road in feet
+#   <passengers> (integer) is the HOV restriction for the lane
+#     (0 or 1 for none, 2 means at least two passengers)
+#   <speed> (double) is the posted speed limit in MPH
+#   <generate> (double) is the probability that a car will be generated
+#     in this lane. This does not need to be normalized.
+#   <meter> (double) is the number of seconds between cars being added
+#
+# after "feeds":
+#   <name2> (string, no spaces) is the name of the road that this feeds
+#   <distance> (double) is the distance in feed from the start of <name2>
+#     where this lane feeds into.
+#
+# after "absorbs":
+#   <absorb> (double) is the probability that this road will absorb a car
+#     at the end of the lane.  This does not need to be normalized.
+
+lane test1 1500 1 60  500  0 absorb 500
+lane test2 2500 2 60 1000  0 absorb 1000
+lane test3  300 1 60  150 15 feeds test1 390
+lane test4  300 1 60    0  0 absorb 1500
+
+# next_to describes how traffic flows from one lane to another.
+# next_to has the following form:
+#   next_to <name1> <start1> <name2> <start2> <length>
+# where:
+#   <name1> (string, no spaces) is the name of the first lane
+#   <start1> (integer) is the distance in feet that the two lanes join up
+#     from the start of the first lane
+#   <name2> (string, no spaces) is the name of the second lane
+#   <start2> (integer) is the distance in feet that the two lanes join up
+#     from the start of the second lane
+#   <length> (integer) is the length of the join on the two lanes
+next_to test1 250 test2 500 750
+next_to test1 100 test3 10 290
+next_to test1 2100 test4 10 390
+
+# exit_to sets the ability for a car to exit at a given exit from the current lane
+#   This is used to determine if a car can make a lane change and when the car is
+#   encouraged and then forced to make a lane change (and which lane to change to)
+#   All lanes can exit from themselves.
+# exit_to has the following form:
+#   exit_to <to> <from> <change> <encourage> <force>
+# Where:
+#   <to> (string, no spaces) is the name of the lane that the car will exit from
+#   <from> (string, no spaces) is the name of the lane that the car is in
+#   <chane> (string, no spaces) is the name of the lane that the car will go into
+#   <encourage> (integer) is the distance in feet from the start of <from> that
+#     the car will start attempting to change lanes
+#   <force> (integer) is the distance in feet from the start of <from> where the
+#     car will stop until it can change lanes
+#
+#   Note: if <encourage> or <force> is greater than the length of <from>, then
+#     the car will exit from the current lane if it goes past the end of the
+#     lane.  (Used to allow for parallel streets.)
+
+exit_to test1 test2 test1 1100 1200
+exit_to test1 test3 test1 200 300
+
+exit_to test2 test1 test2 850 950
+exit_to test2 test3 test1 200 300
+
+exit_to test4 test1 test4 2100 340
+exit_to test4 test2 test1 1100 1200
+exit_to test4 test3 test1 200 300
+
+# feed_rate describes how many cars will be fed into the system.
+# Multiple instances describe successive time slices.
+# feed_rate has the following form:
+#   feed_rate <cars> <duration>
+# where:
+#   <cars> (double) is the number of cars per second to insert into the model.
+#   <duration> (int) is the number of seconds to feed this many cars into
+#     the model.
+feed_rate 2.1 60
+feed_rate 2.5 60
+feed_rate 2.7 60
+
+# driver describes a type of driver.
+# driver has the following form:
+#   driver <name> <occurance> <speed_delta> <following_distance> <width> <std_deviation> <accident> <lane_change>
+# where:
+#   <name> (string sans spaces) is the name of this type of driver
+#   <occurance> (double) is the relative probability that this type of driver
+#     will be generated
+#   <speed_delta> (double) is the relative delta from the speed limit that
+#     this driver will be willing to go.
+#   <following_distance> (double) is the least number of feet that this
+#     driver will be willing to follow (in feet per MPH)
+#     3 is the recommended, .5 is normal for Seattle traffic, .2 is tailgating
+#   <width> (integer) is the width of the distribution for jumping (distance between max/min cutoff)
+#   <std_deviation> (double) is the standard deviation of the jump that this driver will make
+#   <accident> (double) is the liklihood that this driver will cause an accident
+#   <lane_change> (double) is the liklihood that this driver will randomly choose to change lanes
+#     at a given step.
+
+driver normal   1000  +5 0.5 10 5 .00001 .001
+driver slow       10 -10 3   10 5 .00001 .0001
+driver tailgate   20  +5 0.2 10 2 .0005  .01
+driver bad         1  +5 0.5 10 5 .01    .01
+driver fast        3 +20 0.5  4 2 .0005  .1

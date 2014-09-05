@@ -1,0 +1,10 @@
+lane lane1 1500 1 60_MPH  500 0 60_MPH absorb 500
+lane lane2  500 1 60_MPH  500 0 5_MPH feeds lane1 500
+lane lane3  500 1 60_MPH  500 5 5_MPH feeds lane1 500
+
+exit_to lane1 lane2 lane1 600 600
+exit_to lane1 lane3 lane1 600 600
+
+driver normal   1000  +5_MPH 0.5 10 5 .00001 .001 5_MPH
+
+feed_rate 0 60

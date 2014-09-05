@@ -1,0 +1,190 @@
+name 520_12_60_50
+
+# lane is a description of a lane of traffic.
+# lane has two forms:
+#   lane <name> <length> <passengers> <speed> <generate> <meter> feeds <name2> <distance>
+#   lane <name> <length> <passengers> <speed> <generate> <meter> absorbs <absorb>
+#
+# The first form describes a road that feeds into another lane when it terminates.
+# The second form describes a road that goes off the edge of the model.
+#
+# where:
+#   <name> (string, no spaces) is the unique name of the road
+#   <length> (integer) is the length of the road in feet
+#   <passengers> (integer) is the HOV restriction for the lane
+#     (0 or 1 for none, 2 means at least two passengers)
+#   <speed> (double) is the posted speed limit in MPH
+#   <generate> (double) is the probability that a car will be generated
+#     in this lane. This does not need to be normalized.
+#   <meter> (double) is the number of seconds between cars being added to the model
+#   <initial_speed> is the initial speed of cars in this lane when cars
+#     start in this lane.
+#
+# after "feeds":
+#   <name2> (string, no spaces) is the name of the road that this feeds
+#   <distance> (double) is the distance in feed from the start of <name2>
+#     where this lane feeds into.
+#
+# after "absorbs":
+#   <absorb> (double) is the probability that this road will absorb a car
+#     at the end of the lane.  This does not need to be normalized.
+
+# Bridge
+lane 520w_b2       5000_feet 1_person 50_MPH    0  0_s 50_MPH absorb 1940
+lane 520w_b1       5000_feet 1_person 50_MPH    0  0_s 50_MPH absorb 1940
+
+# Mainline and HOV
+lane 520w_2       15000_feet 1_person 60_MPH 1560  0_s 60_MPH feeds 520w_b2 0_feet
+lane 520w_1       15000_feet 1_person 60_MPH  760  0_s 60_MPH feeds 520w_b1 0_feet
+lane 520w_H       14500_feet 3_person 60_MPH    0  0_s 60_MPH feeds 520w_1 14500
+
+# Entrances
+lane 520w_o_84th    300_feet 1_person 60_MPH  440 12_s 5_MPH feeds 520w_1 11500_feet
+lane 520w_o_BelW1   300_feet 1_person 60_MPH  510 12_s 5_MPH feeds 520w_1  5500_feet
+lane 520w_o_BelW2   300_feet 1_person 60_MPH  470 12_s 5_MPH feeds 520w_1  5000_feet
+lane 520w_o_108th   300_feet 1_person 60_MPH  300 12_s 5_MPH feeds 520w_1  4000_feet
+lane 520w_o_SR405   300_feet 1_person 60_MPH 1530  0_s 5_MPH feeds 520w_1  1000_feet
+
+# Exits
+lane 520w_e_92nd    300_feet 1_person 60_MPH    0  0_s 5_MPH absorb 330
+lane 520w_e_108th   300_feet 1_person 60_MPH    0  0_s 5_MPH absorb 1250
+
+# next_to describes how traffic flows from one lane to another.
+# next_to has the following form:
+#   next_to <name1> <start1> <name2> <start2> <length>
+# where:
+#   <name1> (string, no spaces) is the name of the first lane
+#   <start1> (integer) is the distance in feet that the two lanes join up
+#     from the start of the first lane
+#   <name2> (string, no spaces) is the name of the second lane
+#   <start2> (integer) is the distance in feet that the two lanes join up
+#     from the start of the second lane
+#   <length> (integer) is the length of the join on the two lanes
+
+# Mainline, HOV and bridges
+next_to 520w_b2 0_feet 520w_b1   0_feet  5000_feet
+next_to 520w_2  0_feet 520w_1    0_feet 15000_feet
+next_to 520w_H  0_feet 520w_1    0_feet 14500_feet
+
+# Entrances
+next_to 520w_o_84th  0_feet 520w_1 11200_feet 300_feet
+next_to 520w_o_84th  0_feet 520w_H 11200_feet 300_feet
+
+next_to 520w_o_BelW1 0_feet 520w_1  5200_feet 300_feet
+next_to 520w_o_BelW1 0_feet 520w_H  5200_feet 300_feet
+
+next_to 520w_o_BelW2 0_feet 520w_1  4700_feet 300_feet
+next_to 520w_o_BelW2 0_feet 520w_H  4700_feet 300_feet
+
+next_to 520w_o_108th 0_feet 520w_1  3700_feet 300_feet
+next_to 520w_o_108th 0_feet 520w_H  3700_feet 300_feet
+
+next_to 520w_o_SR405 0_feet 520w_1   700_feet 300_feet
+next_to 520w_o_SR405 0_feet 520w_H   700_feet 300_feet
+
+# Exits
+next_to 520w_e_92nd  0_feet 520w_1  8200_feet 300_feet
+next_to 520w_e_92nd  0_feet 520w_H  8200_feet 300_feet
+
+next_to 520w_e_108th 0_feet 520w_1  2700_feet 300_feet
+next_to 520w_e_108th 0_feet 520w_H  2700_feet 300_feet
+
+# exit_to sets the ability for a car to exit at a given exit from the current lane
+#   This is used to determine if a car can make a lane change and when the car is
+#   encouraged and then forced to make a lane change (and which lane to change to)
+#   All lanes can exit from themselves.
+# exit_to has the following form:
+#   exit_to <to> <from> <change> <encourage> <force>
+# Where:
+#   <to> (string, no spaces) is the name of the lane that the car will exit from
+#   <from> (string, no spaces) is the name of the lane that the car is in
+#   <change> (string, no spaces) is the name of the lane that the car will go into
+#   <encourage> (integer) is the distance in feet from the start of <from> that
+#     the car will start attempting to change lanes
+#   <force> (integer) is the distance in feet from the start of <from> where the
+#     car will stop until it can change lanes
+#
+#   Note: if <encourage> or <force> is greater than the length of <from>, then
+#     the car will exit from (or feed to the feed lane) the current lane if it goes
+#     past the end of the lane.  (Used to allow for parallel streets.)
+
+exit_to 520w_b1 520w_b2 520w_b1  6000_feet  6000_feet
+exit_to 520w_b1 520w_1  520w_1  16000_feet 16000_feet
+exit_to 520w_b1 520w_2  520w_2  16000_feet 16000_feet
+exit_to 520w_b1 520w_H  520w_H  16000_feet 16000_feet
+
+exit_to 520w_b1 520w_o_84th  520w_1 0_feet 300_feet
+exit_to 520w_b1 520w_o_BelW1 520w_1 0_feet 300_feet
+exit_to 520w_b1 520w_o_BelW2 520w_1 0_feet 300_feet
+exit_to 520w_b1 520w_o_108th 520w_1 0_feet 300_feet
+exit_to 520w_b1 520w_o_SR405 520w_1 0_feet 300_feet
+
+exit_to 520w_b2 520w_b1 520w_b2  6000_feet  6000_feet
+exit_to 520w_b2 520w_1  520w_1  16000_feet 16000_feet
+exit_to 520w_b2 520w_2  520w_2  16000_feet 16000_feet
+exit_to 520w_b2 520w_H  520w_H  16000_feet 16000_feet
+
+exit_to 520w_b2 520w_o_84th  520w_1 0_feet 300_feet
+exit_to 520w_b2 520w_o_BelW1 520w_1 0_feet 300_feet
+exit_to 520w_b2 520w_o_BelW2 520w_1 0_feet 300_feet
+exit_to 520w_b2 520w_o_108th 520w_1 0_feet 300_feet
+exit_to 520w_b2 520w_o_SR405 520w_1 0_feet 300_feet
+
+# exit to 92nd
+exit_to 520w_e_92nd 520w_1 520w_e_92nd 8200_feet 8450_feet
+exit_to 520w_e_92nd 520w_H 520w_e_92nd 8200_feet 8450_feet
+exit_to 520w_e_92nd 520w_2 520w_1      7900_feet 8200_feet
+
+exit_to 520w_e_92nd 520w_o_BelW1 520w_1 0_feet 300_feet
+exit_to 520w_e_92nd 520w_o_BelW2 520w_1 0_feet 300_feet
+exit_to 520w_e_92nd 520w_o_108th 520w_1 0_feet 300_feet
+exit_to 520w_e_92nd 520w_o_SR405 520w_1 0_feet 300_feet
+
+# exit to 108th
+exit_to 520w_e_108th 520w_1 520w_e_108th 2700_feet 2950_feet
+exit_to 520w_e_108th 520w_H 520w_e_108th 2700_feet 2950_feet
+exit_to 520w_e_108th 520w_2 520w_1       2400_feet 2700_feet
+
+exit_to 520w_e_108th 520w_o_SR405 520w_1 0_feet 300_feet
+
+# feed_rate describes how many cars will be fed into the system.
+# Multiple instances describe successive time slices.
+# feed_rate has the following form:
+#   feed_rate <cars> <duration>
+# where:
+#   <cars> (double) is the number of cars per second to insert into the model.
+#   <duration> (int) is the number of seconds to feed this many cars into
+#     the model.
+
+#feed_rate 10_cars   60_s
+feed_rate 1.5_cars 3600_s
+#feed_rate 1.7_cars 3600_s
+#feed_rate 1.4_cars 3600_s
+
+# driver describes a type of driver.
+# driver has the following form:
+#   driver <name> <occurance> <speed_delta> <following_distance> <width> <std_deviation> <accident> <lane_change> [<breakdown>]
+# where:
+#   <name> (string sans spaces) is the name of this type of driver
+#   <occurance> (double) is the relative probability that this type of driver
+#     will be generated
+#   <speed_delta> (double) is the relative delta from the speed limit that
+#     this driver will be willing to go.
+#   <following_distance> (double) is the least number of feet that this
+#     driver will be willing to follow (in feet per MPH)
+#     3 is the recommended, .5 is normal for Seattle traffic, .2 is tailgating
+#   <width> (integer) is the width of the distribution for jumping (distance between max/min cutoff)
+#   <std_deviation> (double) is the standard deviation of the jump that this driver will make
+#   <accident> (double) is the liklihood that this driver will cause an accident
+#   <lane_change> (double) is the liklihood that this driver will randomly choose to change lanes
+#     at a given step.
+#   <acceleration> is the velocity change per time step that this driver is willing to speed up.
+#   <breakdown> (optional) is the liklihood that the car will break down per time step.
+#     If breakdown is not specified, it is equal to accident / 10
+
+driver normal   1000  +5_MPH 0.4_feet_per_MPH 10_feet 5_feet .00001 .001   5_MPH_per_s
+driver slow       50 -20_MPH   3_feet_per_MPH 10_feet 5_feet .00001 .0001  1_MPH_per_s
+driver tailgate  100  +5_MPH 0.2_feet_per_MPH 10_feet 2_feet .0005  .01    5_MPH_per_s
+driver bad        10  +5_MPH 0.4_feet_per_MPH 10_feet 5_feet .005   .01    5_MPH_per_s
+driver fast      100 +20_MPH 0.3_feet_per_MPH  4_feet 2_feet .0005  .05   10_MPH_per_s
+driver bad_car    10  +5_MPH 0.4_feet_per_MPH 10_feet 5_feet .00001 .01    5_MPH_per_s .0001
